@@ -1,6 +1,6 @@
 import { Answer } from "./interfaces/answer";
 import { Question, QuestionType } from "./interfaces/question";
-import { makeBlankQuestion } from "./objects";
+import { makeBlankQuestion, duplicateQuestion } from "./objects";
 
 /**
  * Consumes an array of questions and returns a new array with only the questions
@@ -195,7 +195,13 @@ export function renameQuestionById(
     targetId: number,
     newName: string,
 ): Question[] {
-    return [];
+    const newQuestions: Question[] = questions.map(
+        (question: Question): Question =>
+            question.id === targetId ?
+                { ...question, name: newName }
+            :   { ...question },
+    );
+    return newQuestions;
 }
 
 /***
@@ -210,7 +216,17 @@ export function changeQuestionTypeById(
     targetId: number,
     newQuestionType: QuestionType,
 ): Question[] {
-    return [];
+    const newQuestions: Question[] = questions.map(
+        (question: Question): Question => {
+            if (question.id !== targetId) return question;
+            if (newQuestionType === "multiple_choice_question") {
+                return { ...question, type: newQuestionType };
+            } else {
+                return { ...question, type: newQuestionType, options: [] };
+            }
+        },
+    );
+    return newQuestions;
 }
 
 /**
@@ -223,13 +239,33 @@ export function changeQuestionTypeById(
  * Remember, if a function starts getting too complicated, think about how a helper function
  * can make it simpler! Break down complicated tasks into little pieces.
  */
+function addOption(
+    question: Question,
+    targetOptionIndex: number,
+    newOption: string,
+): Question {
+    if (targetOptionIndex !== -1) {
+        const newOptions: string[] = [...question.options];
+        newOptions[targetOptionIndex] = newOption;
+        return { ...question, options: [...newOptions] };
+    } else {
+        return { ...question, options: [...question.options, newOption] };
+    }
+}
+
 export function editOption(
     questions: Question[],
     targetId: number,
     targetOptionIndex: number,
     newOption: string,
 ): Question[] {
-    return [];
+    const edited: Question[] = questions.map(
+        (question: Question): Question =>
+            question.id === targetId ?
+                addOption(question, targetOptionIndex, newOption)
+            :   question,
+    );
+    return edited;
 }
 
 /***
@@ -243,5 +279,17 @@ export function duplicateQuestionInArray(
     targetId: number,
     newId: number,
 ): Question[] {
-    return [];
+    const targetIndex: number = questions.findIndex(
+        (question: Question): boolean => question.id === targetId,
+    );
+    if (targetIndex === -1) return questions;
+    const duplicated: Question = duplicateQuestion(
+        newId,
+        questions[targetIndex],
+    );
+    return [
+        ...questions.slice(0, targetIndex + 1),
+        duplicated,
+        ...questions.slice(targetIndex + 1),
+    ];
 }
