@@ -16,7 +16,7 @@ export function StartAttempt(): React.JSX.Element {
                 {inProgress ? "Quiz in progress" : "Waiting to start quiz"}
             </div>
             <Button
-                disabled={inProgress}
+                disabled={inProgress || attempts === 0}
                 onClick={() => {
                     setAttempts(attempts - 1);
                     setInProgress(true);
@@ -25,7 +25,7 @@ export function StartAttempt(): React.JSX.Element {
                 Start Quiz
             </Button>
             <Button
-                disabled={!inProgress || attempts === 0}
+                disabled={!inProgress}
                 onClick={() => {
                     setInProgress(false);
                 }}
